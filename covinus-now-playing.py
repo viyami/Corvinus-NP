@@ -1,48 +1,7 @@
 import obspython
-import os, time, datetime, requests, codecs
 import win32com.client
 import win32gui
 import ctypes
-
-class foobar:
-	ProgID = "Foobar2000.Application.0.7"
-	foobar_COM_object = win32com.client.Dispatch(ProgID)
-	playback = foobar_COM_object.Playback
-	
-	def isPlaying(self):
-		  return playback.IsPlaying
-
-	def seekPosition(self):
-		   return playback.Position
-
-	def lengthOfTrack(self):
-			return str(playback.FormatTitle("[%length%]"))
-
-	def getCurrentTrack(self):
-		if self.isPlaying():
-			track = str(playback.FormatTitle("[%title%]"))
-			if len(track) == 0:
-				return ""
-			else:
-				return track
-	
-	def getCurrentArtist(self):
-		if self.isPlaying():
-			artist = str(playback.FormatTitle("[%artist%]"))
-			if len(artist) == 0:
-				return ""
-			else:
-				return artist
-
-	def getCurrentAlbum(self):
-		if self.isPlaying():
-			album = str(playback.FormatTitle("[%album%]"))
-			if len(album) == 0:
-				return ""
-			else:
-				return album
-
-fb2k = foobar()
 
 #try:
 #	from HTMLParser import HTMLParser
@@ -183,14 +142,16 @@ def get_song_info():
 		return str
 
 	# populate outputs
-	if(source_foobar == True and fb2k.isPlaying == True):
-		song_artist = fb2k.getCurrentArtist()
-		song_title = fb2k.getCurrentTrack()
-		song_album = fb2k.getCurrentAlbum()
-		song_length = fb2k.lengthOfTrack()
-		song_tracking = fb2k.seekPosition()
+	ProgID = "Foobar2000.Application.0.7"
+	foobar_COM_object = win32com.client.Dispatch(ProgID)
+	fb2k = foobar_COM_object.Playback
+
+	if(source_foobar == True and fb2k.IsPlaying == True):
+		song_artist = fb2k.FormatTitle("[%artist%]")
+		song_title = fb2k.FormatTitle("[%title%]")
+		song_album = fb2k.FormatTitle("[%album%]")
 		
-		now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album)
+		now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "
 	
 	elif(source_youtube == True):
 		EnumWindows = ctypes.windll.user32.EnumWindows
@@ -215,14 +176,6 @@ def get_song_info():
 		
 		song_title_new = format_browser_title(titles)
 		now_playing = song_title_new
-
-	# if(now_playing == ""):
-		# if(song_title != "" and song_artist != ""):
-			# now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title)
-		# elif(song_title == ""):
-			# now_playing = song_title
-		# else:
-			# now_playing = ""
 			
 	update_song()
 	
