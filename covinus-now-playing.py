@@ -10,7 +10,6 @@ import ctypes
 
 working = True
 enabled = True
-now_playing = ""
 latency = 1000
 display_text = ""
 debug_mode = False
@@ -48,9 +47,10 @@ def script_description():
 		"<code>%artist</code> to display current artist; <code>%title</code> to display the current track title; <code>%source</code> to display the current source name<br/><br/>" + \
 		"<hr>"
 		
-def script_load(settings):	
+def script_load(settings):
 	global debug_mode
-	if debug_mode: print("Loaded script for Corvinus Now Playing")
+	if(debug_mode): 
+		print("Loaded script for Corvinus Now Playing")
 	
 def script_properties():
 	global debug_mode
@@ -155,7 +155,7 @@ def get_song_info():
 		return True
 		
 	EnumWindows(EnumWindowsProc(foreach_window), 0)
-
+		
 	#---------------------------------------
 	# foobar2000 handler
 	#---------------------------------------
@@ -176,11 +176,14 @@ def get_song_info():
 				song_title = fb2k.FormatTitle("[%title%]")
 				song_album = fb2k.FormatTitle("[%album%]")
 				
-				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "			
+				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "		
+			else:
+				song_title_new = format_browser_title(titles)
+				now_playing = song_title_new
 		except:
 			source_foobar = False
 			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
-	else:		
+	else:
 		song_title_new = format_browser_title(titles)
 		now_playing = song_title_new
 			
