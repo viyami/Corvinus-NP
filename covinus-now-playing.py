@@ -15,8 +15,6 @@ latency = 1000
 display_text = ""
 debug_mode = False
 source_name = ""
-source_foobar = False
-source_youtube = False
 
 #----------------------------------------------
 # OBS Script Functions
@@ -38,8 +36,6 @@ def script_defaults(settings):
 	obspython.obs_data_set_default_int(settings, "latency", latency)
 	obspython.obs_data_set_default_string(settings, "source_name", source_name)
 	obspython.obs_data_set_default_string(settings, "display_text", display_text)
-	obspython.obs_data_set_default_bool(settings, "source_youtube", source_youtube)
-	obspython.obs_data_set_default_bool(settings, "source_foobar", source_foobar)
 	
 def script_description():
 	return "<b>Corvinus: Now Playing</b>" + \
@@ -62,8 +58,6 @@ def script_properties():
 	
 	props = obspython.obs_properties_create()
 	obspython.obs_properties_add_bool(props, "enabled", "Enabled")
-	obspython.obs_properties_add_bool(props, "source_foobar", "foobar2000 as a source")
-	obspython.obs_properties_add_bool(props, "source_youtube", "YouTube as a source")
 	obspython.obs_properties_add_bool(props, "debug_mode", "Debug Mode")
 	obspython.obs_properties_add_int(props, "latency", "Check Frequency (ms)", 150, 10000, 100)
 	obspython.obs_properties_add_text(props, "display_text", "Display Text", obspython.OBS_TEXT_DEFAULT)
@@ -88,8 +82,6 @@ def script_update(settings):
 	global display_text
 	global latency
 	global source_name
-	global source_youtube
-	global source_foobar
 	
 	if obspython.obs_data_get_bool(settings, "enabled") is True:
 		if (not enabled):
@@ -119,6 +111,8 @@ def get_song_info():
 	global display_text
 	global latency
 	
+	source_foobar = False
+	
 	song_artist = ""
 	song_title = ""
 	song_album = ""
@@ -140,43 +134,53 @@ def get_song_info():
 						str = str[x+1:]
 						return str
 		return str
+		
+	# get running window titles
+	EnumWindows = ctypes.windll.user32.EnumWindows
+	
+	EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
+	
+	GetWindowText = ctypes.windll.user32.GetWindowTextW
+	GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+	IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+	
+	titles = []
+	
+	def foreach_window(hwnd, lParam):
+		if IsWindowVisible(hwnd):
+			length = GetWindowTextLength(hwnd)
+			buff = ctypes.create_unicode_buffer(length + 1)
+			GetWindowText(hwnd, buff, length + 1)
+			titles.append(buff.value)
+		return True
+		
+	EnumWindows(EnumWindowsProc(foreach_window), 0)
 
-	# populate outputs
-	if(source_foobar):
+	#---------------------------------------
+	# foobar2000 handler
+	#---------------------------------------
+	for i in titles:
+		if("foobar2000" in i):
+			source_foobar = True
+			break
+		else:
+			source_foobar = False
+	if(source_foobar == True):
 		ProgID = "Foobar2000.Application.0.7"
 		try:
 			foobar_COM_object = win32com.client.Dispatch(ProgID)
+			fb2k = foobar_COM_object.Playback
+
+			if(fb2k.IsPlaying == True):
+				song_artist = fb2k.FormatTitle("[%artist%]")
+				song_title = fb2k.FormatTitle("[%title%]")
+				song_album = fb2k.FormatTitle("[%album%]")
+				
+				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "			
 		except:
 			source_foobar = False
-			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly. For your convenience foobar2000 has been temporarily disabled as a source.")	
-		if(source_foobar and fb2k.IsPlaying == True):
-			fb2k = foobar_COM_object.Playback
-			song_artist = fb2k.FormatTitle("[%artist%]")
-			song_title = fb2k.FormatTitle("[%title%]")
-			song_album = fb2k.FormatTitle("[%album%]")
-			
-			now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "	
-	elif(source_youtube == True):
-		EnumWindows = ctypes.windll.user32.EnumWindows
-		
-		EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
-		
-		GetWindowText = ctypes.windll.user32.GetWindowTextW
-		GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
-		IsWindowVisible = ctypes.windll.user32.IsWindowVisible
-		
-		titles = []
-		
-		def foreach_window(hwnd, lParam):
-			if IsWindowVisible(hwnd):
-				length = GetWindowTextLength(hwnd)
-				buff = ctypes.create_unicode_buffer(length + 1)
-				GetWindowText(hwnd, buff, length + 1)
-				titles.append(buff.value)
-			return True
-			
-		EnumWindows(EnumWindowsProc(foreach_window), 0)
-		
+			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
+	else:		
 		song_title_new = format_browser_title(titles)
 		now_playing = song_title_new
 			
