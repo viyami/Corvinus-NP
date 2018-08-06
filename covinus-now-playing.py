@@ -3,14 +3,8 @@ import win32com.client
 import win32gui
 import ctypes
 
-#try:
-#	from HTMLParser import HTMLParser
-#except ImportError:
-#	from html.parser import HTMLParser
-
-working = True
 enabled = True
-latency = 1000
+latency = 4000
 display_text = ""
 debug_mode = False
 source_name = ""
@@ -18,7 +12,6 @@ source_name = ""
 #----------------------------------------------
 # OBS Script Functions
 #----------------------------------------------
-
 def script_defaults(settings):
 	global debug_mode
 	if debug_mode: print("Calling defaults")
@@ -105,7 +98,6 @@ def script_update(settings):
 #----------------------------------------------
 def get_song_info():
 	global debug_mode
-	global working
 	global now_playing
 	global display_text
 	global latency
