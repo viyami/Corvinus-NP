@@ -41,10 +41,10 @@ def script_description():
 		"<hr>" + \
 		"Check the boxes of audio sources you wish to capture current data from.<br/><br/>" + \
 		"Available services:<br/>" + \
-		"YouTube: Will get current page title from Chrome or Firefox with 'YouTube' in its title and format it appropriately as possible.<br/>" + \
-		"Foobar2000: Will automatically obtain track data from Foobar.<br/><br/>" + \
+		"YouTube: Will get current page title from any browser window with 'YouTube' in its title and format it appropriately as possible.<br/>" + \
+		"foobar2000: Will automatically obtain track data from Foobar.<br/><br/>" + \
 		"Available Placeholder Strings:<br/>" + \
-		"<code>%artist</code> to display current artist; <code>%title</code> to display the current track title; <code>%source</code> to display the current source name<br/><br/>" + \
+		"<code>%artist</code> to display current artist<br/><code>%title</code> to display the current track title<br/><code>%source</code> to display the current source name<br/><br/>" + \
 		"<hr>"
 		
 def script_load(settings):
@@ -83,6 +83,12 @@ def script_update(settings):
 	global latency
 	global source_name
 	
+	debug_mode = obspython.obs_data_get_bool(settings, "enabled")
+	debug_mode = obspython.obs_data_get_bool(settings, "debug_mode")
+	display_text = obspython.obs_data_get_string(settings, "display_text")
+	latency = obspython.obs_data_get_int(settings, "latency")
+	source_name = obspython.obs_data_get_string(settings, "source_name")
+	
 	if obspython.obs_data_get_bool(settings, "enabled") is True:
 		if (not enabled):
 			if debug_mode: print("Enabled song timer for Corvinus Now Playing")
@@ -93,13 +99,6 @@ def script_update(settings):
 			if debug_mode: print("Disabled song timer for Corvinus Now Playing")
 			enabled = False
 			obspython.timer_remove(get_song_info)
-			
-	debug_mode = obspython.obs_data_get_bool(settings, "debug_mode")
-	display_text = obspython.obs_data_get_string(settings, "display_text")
-	latency = obspython.obs_data_get_int(settings, "latency")
-	source_name = obspython.obs_data_get_string(settings, "source_name")
-	source_youtube = obspython.obs_data_get_bool(settings, "source_youtube")
-	source_foobar = obspython.obs_data_get_bool(settings, "source_foobar")
 	
 #----------------------------------------------
 # Corvinus Now Playing Functionality
