@@ -1,8 +1,19 @@
-import obspython
-import win32com.client
-import win32gui
 import ctypes
 
+try:
+	import obspython
+except ImportError:
+	print("Error: As this is an OBS targeted script, you should be running this in OBS. Just sayin\'")
+
+try:
+	import win32gui
+	import win32com.client
+except ImportError:
+	print("Error: Corvinus Now Playing could not find pywin32 installed in your python path. Please make sure it's installed properly.")
+
+#----------------------------------------------
+# global properties/options
+#----------------------------------------------
 enabled = True
 latency = 4000
 display_text = ""
@@ -10,7 +21,7 @@ debug_mode = False
 source_name = ""
 
 #----------------------------------------------
-# OBS Script Functions
+# OBS Properties Handling
 #----------------------------------------------
 def script_defaults(settings):
 	global debug_mode
