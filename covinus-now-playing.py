@@ -125,8 +125,11 @@ def get_song_info():
 		for i in input_array:
 			if("YouTube" in i):
 				str = i;
-				str = str.replace("- YouTube - Mozilla Firefox", "")
-				str = str.replace("- YouTube - Google Chrome", "")
+				try:
+					index = str.index("- YouTube - ")
+					str = str[:index-1]
+				except:
+					print("Something went wrong formatting YouTube's title.")
 			# remove notification count
 			if(str[:1] == "("):
 				for x in range(len(str)):
@@ -176,16 +179,16 @@ def get_song_info():
 				song_title = fb2k.FormatTitle("[%title%]")
 				song_album = fb2k.FormatTitle("[%album%]")
 				
-				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "		
+				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "\t"
 			else:
 				song_title_new = format_browser_title(titles)
-				now_playing = song_title_new
+				now_playing = song_title_new + "\t"
 		except:
 			source_foobar = False
 			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
 	else:
 		song_title_new = format_browser_title(titles)
-		now_playing = song_title_new
+		now_playing = song_title_new + "\t"
 			
 	update_song()
 	
