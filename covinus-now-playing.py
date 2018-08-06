@@ -142,17 +142,20 @@ def get_song_info():
 		return str
 
 	# populate outputs
-	ProgID = "Foobar2000.Application.0.7"
-	foobar_COM_object = win32com.client.Dispatch(ProgID)
-	fb2k = foobar_COM_object.Playback
-
-	if(source_foobar == True and fb2k.IsPlaying == True):
-		song_artist = fb2k.FormatTitle("[%artist%]")
-		song_title = fb2k.FormatTitle("[%title%]")
-		song_album = fb2k.FormatTitle("[%album%]")
-		
-		now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "
-	
+	if(source_foobar):
+		ProgID = "Foobar2000.Application.0.7"
+		try:
+			foobar_COM_object = win32com.client.Dispatch(ProgID)
+		except:
+			source_foobar = False
+			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly. For your convenience foobar2000 has been temporarily disabled as a source.")	
+		if(source_foobar and fb2k.IsPlaying == True):
+			fb2k = foobar_COM_object.Playback
+			song_artist = fb2k.FormatTitle("[%artist%]")
+			song_title = fb2k.FormatTitle("[%title%]")
+			song_album = fb2k.FormatTitle("[%album%]")
+			
+			now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "	
 	elif(source_youtube == True):
 		EnumWindows = ctypes.windll.user32.EnumWindows
 		
