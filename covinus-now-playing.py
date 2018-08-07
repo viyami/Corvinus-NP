@@ -19,6 +19,7 @@ latency = 4000
 display_text = ""
 debug_mode = False
 source_name = ""
+output_buffer = 5
 
 #----------------------------------------------
 # OBS Properties Handling
@@ -31,14 +32,13 @@ def script_defaults(settings):
 	global source_name
 	global display_text
 	global latency
-	# potential sources
-	global source_youtube
-	global source_foobar
+	global output_buffer
 	
 	obspython.obs_data_set_default_bool(settings, "enabled", enabled)
 	obspython.obs_data_set_default_int(settings, "latency", latency)
 	obspython.obs_data_set_default_string(settings, "source_name", source_name)
 	obspython.obs_data_set_default_string(settings, "display_text", display_text)
+	obspython.obs_data_set_default_int(settings, "output_buffer", output_buffer)
 	
 def script_description():
 	return "<b>Corvinus: Now Playing</b>" + \
@@ -62,10 +62,12 @@ def script_properties():
 	
 	props = obspython.obs_properties_create()
 	obspython.obs_properties_add_bool(props, "enabled", "Enabled")
-	obspython.obs_properties_add_bool(props, "debug_mode", "Debug Mode")
+	obspython.obs_properties_add_text(props, "source_name", "Text (GDI+) Target's Name", obspython.OBS_TEXT_DEFAULT)
 	obspython.obs_properties_add_int(props, "latency", "Check Frequency (ms)", 150, 10000, 100)
 	obspython.obs_properties_add_text(props, "display_text", "Display Text", obspython.OBS_TEXT_DEFAULT)
-	obspython.obs_properties_add_text(props, "source_name", "Target Text (GDI+) Name", obspython.OBS_TEXT_DEFAULT)
+	obspython.obs_properties_add_int(props, "output_buffer", "Display Text Buffer Space", 1, 10, 1)
+	obspython.obs_properties_add_bool(props, "debug_mode", "Debug Mode")
+	
 	return props
 	
 def script_save(settings):
@@ -86,13 +88,16 @@ def script_update(settings):
 	global display_text
 	global latency
 	global source_name
+	global output_buffer
 	
 	debug_mode = obspython.obs_data_get_bool(settings, "enabled")
 	debug_mode = obspython.obs_data_get_bool(settings, "debug_mode")
+	output_buffer = obspython.obs_data_get_int(settings, "output_buffer")
 	display_text = obspython.obs_data_get_string(settings, "display_text")
 	latency = obspython.obs_data_get_int(settings, "latency")
 	source_name = obspython.obs_data_get_string(settings, "source_name")
 	
+
 	if obspython.obs_data_get_bool(settings, "enabled") is True:
 		if (not enabled):
 			if debug_mode: print("Enabled song timer for Corvinus Now Playing")
@@ -112,6 +117,7 @@ def get_song_info():
 	global now_playing
 	global display_text
 	global latency
+	global output_buffer
 	
 	source_foobar = False
 	
@@ -121,6 +127,10 @@ def get_song_info():
 	song_length = ""
 	song_tracking = 0
 	now_playing = ""
+	buffer_string = ""
+
+	for x in range(output_buffer):
+		buffer_string = buffer_string + " "
 	
 	def format_browser_title(input_array):
 		str = ""
@@ -181,16 +191,16 @@ def get_song_info():
 				song_title = fb2k.FormatTitle("[%title%]")
 				song_album = fb2k.FormatTitle("[%album%]")
 				
-				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "      "
+				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + buffer_string
 			else:
 				song_title_new = format_browser_title(titles)
-				now_playing = song_title_new + "      "
+				now_playing = song_title_new + buffer_string
 		except:
 			source_foobar = False
 			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
 	else:
 		song_title_new = format_browser_title(titles)
-		now_playing = song_title_new + "      "
+		now_playing = song_title_new + buffer_string
 			
 	update_song()
 	
