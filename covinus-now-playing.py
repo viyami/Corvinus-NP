@@ -181,16 +181,16 @@ def get_song_info():
 				song_title = fb2k.FormatTitle("[%title%]")
 				song_album = fb2k.FormatTitle("[%album%]")
 				
-				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "    "
+				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + "      "
 			else:
 				song_title_new = format_browser_title(titles)
-				now_playing = song_title_new + "    "
+				now_playing = song_title_new + "      "
 		except:
 			source_foobar = False
 			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
 	else:
 		song_title_new = format_browser_title(titles)
-		now_playing = song_title_new + "    "
+		now_playing = song_title_new + "      "
 			
 	update_song()
 	
