@@ -17,6 +17,7 @@ except ImportError:
 enabled = True
 latency = 4000
 display_text = ""
+alt_display_text = ""
 debug_mode = False
 source_name = ""
 output_buffer = 5
@@ -31,6 +32,7 @@ def script_defaults(settings):
 	global enabled
 	global source_name
 	global display_text
+	global alt_display_text
 	global latency
 	global output_buffer
 	
@@ -38,6 +40,7 @@ def script_defaults(settings):
 	obspython.obs_data_set_default_int(settings, "latency", latency)
 	obspython.obs_data_set_default_string(settings, "source_name", source_name)
 	obspython.obs_data_set_default_string(settings, "display_text", display_text)
+	obspython.obs_data_set_default_string(settings, "alt_display_text", alt_display_text)
 	obspython.obs_data_set_default_int(settings, "output_buffer", output_buffer)
 	
 def script_description():
@@ -65,6 +68,7 @@ def script_properties():
 	obspython.obs_properties_add_text(props, "source_name", "Text (GDI+) Target's Name", obspython.OBS_TEXT_DEFAULT)
 	obspython.obs_properties_add_int(props, "latency", "Check Frequency (ms)", 150, 10000, 100)
 	obspython.obs_properties_add_text(props, "display_text", "Display Text", obspython.OBS_TEXT_DEFAULT)
+	obspython.obs_properties_add_text(props, "alt_display_text", "Fallback Display Text", obspython.OBS_TEXT_DEFAULT)
 	obspython.obs_properties_add_int(props, "output_buffer", "Display Text Buffer Space", 1, 10, 1)
 	obspython.obs_properties_add_bool(props, "debug_mode", "Debug Mode")
 	
@@ -86,6 +90,7 @@ def script_update(settings):
 	
 	global enabled
 	global display_text
+	global alt_display_text
 	global latency
 	global source_name
 	global output_buffer
@@ -94,6 +99,7 @@ def script_update(settings):
 	debug_mode = obspython.obs_data_get_bool(settings, "debug_mode")
 	output_buffer = obspython.obs_data_get_int(settings, "output_buffer")
 	display_text = obspython.obs_data_get_string(settings, "display_text")
+	alt_display_text = obspython.obs_data_get_string(settings, "alt_display_text")
 	latency = obspython.obs_data_get_int(settings, "latency")
 	source_name = obspython.obs_data_get_string(settings, "source_name")
 	
@@ -116,10 +122,12 @@ def get_song_info():
 	global debug_mode
 	global now_playing
 	global display_text
+	global alt_display_text
 	global latency
 	global output_buffer
 	
 	source_foobar = False
+	source_youtube = False
 	
 	song_artist = ""
 	song_title = ""
@@ -178,30 +186,35 @@ def get_song_info():
 		if("foobar2000" in i):
 			source_foobar = True
 			break
+		elif("YouTube" in i):
+			source_youtube = True
+			break
 		else:
 			source_foobar = False
-	if(source_foobar == True):
+			source_youtube = False
+			
+	# attempt connecting to fb2k handling service
+	try:
 		ProgID = "Foobar2000.Application.0.7"
-		try:
-			foobar_COM_object = win32com.client.Dispatch(ProgID)
-			fb2k = foobar_COM_object.Playback
+		foobar_COM_object = win32com.client.Dispatch(ProgID)
+		fb2k = foobar_COM_object.Playback
+		source_foobar = True
+	except:
+		source_foobar = False
+		print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
 
-			if(fb2k.IsPlaying == True):
-				song_artist = fb2k.FormatTitle("[%artist%]")
-				song_title = fb2k.FormatTitle("[%title%]")
-				song_album = fb2k.FormatTitle("[%album%]")
-				
-				now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + buffer_string
-			else:
-				song_title_new = format_browser_title(titles)
-				now_playing = song_title_new + buffer_string
-		except:
-			source_foobar = False
-			print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
-	else:
+	if(source_foobar == True and fb2k.IsPlaying == True):
+		song_artist = fb2k.FormatTitle("[%artist%]")
+		song_title = fb2k.FormatTitle("[%title%]")
+		song_album = fb2k.FormatTitle("[%album%]")
+			
+		now_playing = display_text.replace("%artist", song_artist).replace("%title", song_title).replace("%album", song_album) + buffer_string
+	elif(source_youtube == True):
 		song_title_new = format_browser_title(titles)
 		now_playing = song_title_new + buffer_string
-			
+	else:
+		now_playing = alt_display_text + buffer_string
+
 	update_song()
 	
 def update_song():
