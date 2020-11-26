@@ -3,9 +3,9 @@
 <h3>1.) Install the following dependencies:</h3>
 <ul>
 	<li><b>Python 3.6</b></li>
-	<li><ul><li>Download and follow install instructions from https://www.python.org/ <i>(If you're using 64-bit OBS, you must use 64-bit Python.)</i></li></ul></li>
+	<li><ul><li>Download and follow install instructions from https://www.python.org/ <i>(If you're using 64-bit OBS, you must use 64-bit Python. As of this writing, only Python up to 3.6 is compatible with OBS and given that this is written in Python 3, at least version 3 is required.)</i></li></ul></li>
 	<li><b>pyWin32</b></li>
-	<li><ul><li>Download and follow install instructions from https://github.com/mhammond/pywin32 for your version of python. <i>(That means both version number and 32/64-bit.)</i></li></ul></li>
+	<li><ul><li>Download and install PyWin32 from either https://github.com/mhammond/pywin32 or by using "pip install pywin32" from the command line.</i></li></ul></li>
 	</ul>
 	<h4>Optional Dependencies</h4>
 	<ul>
