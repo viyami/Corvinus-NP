@@ -149,7 +149,7 @@ def get_song_info():
 					index = str.index("- YouTube - ")
 					str = str[:index-1]
 				except:
-					print("Something went wrong formatting YouTube's title.")
+					if debug_mode: print("Something went wrong formatting YouTube's title.")
 			# remove notification count
 			if(str[:1] == "("):
 				for x in range(len(str)):
@@ -201,7 +201,7 @@ def get_song_info():
 		source_foobar = True
 	except:
 		source_foobar = False
-		print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
+		if debug_mode: print("Error: Could not connect to foobar2000 COM service. Please make sure it's installed properly.")	
 
 	if(source_foobar == True and fb2k.IsPlaying == True):
 		song_artist = fb2k.FormatTitle("[%artist%]")
